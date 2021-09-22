@@ -8,7 +8,7 @@ import mimetypes
 import logging
 import hashlib
 # import base64
-from common import log, types
+from ...common import log, types
 
 
 TTL_1YEAR = 31556926

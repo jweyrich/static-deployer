@@ -8,9 +8,9 @@ import glob
 import argparse
 import re
 import logging
-from common import log, types, configuration
-from providers.cdn import cloudfront
-from providers.storage import s3bucket
+from static_deployer.common import log, types, configuration
+from static_deployer.providers.cdn import cloudfront
+from static_deployer.providers.storage import s3bucket
 
 
 def find_local_files(root_dir: str, glob_patterns: str) -> Set[str]:
@@ -235,6 +235,10 @@ def parse_args() -> (str, configuration.ConfigOptions):
 
 
 def main():
+    log_format = '%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(funcName)s %(message)s'
+    log_level = logging.DEBUG if os.environ.get('DEBUG', '') else logging.INFO
+    logging.basicConfig(format=log_format, level=log_level)
+
     subcommand, config_options = parse_args()
     success = True
 
