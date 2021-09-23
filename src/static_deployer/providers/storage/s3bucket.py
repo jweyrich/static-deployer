@@ -82,3 +82,24 @@ def upload_files(root_dir: str, bucket_name: str, file_mappings: List[types.File
         if not success:
             return False
     return True
+
+
+def file_exists(bucket_name: str, path: str) -> bool:
+    try:
+        client = boto3.client("s3")
+        response = client.list_objects_v2(
+            Bucket=bucket_name,
+            Prefix=path,
+            MaxKeys=1)
+        object_list = response.get('Contents', []);
+        return len(object_list) > 0
+    except ClientError as e:
+        logging.error(e)
+        return False
+    return False
+
+
+def directory_exists(bucket_name: str, path: str) -> bool:
+    if not path.endswith('/'):
+        path = path + '/'
+    return file_exists(bucket_name=bucket_name, path=path)

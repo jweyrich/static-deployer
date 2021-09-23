@@ -83,8 +83,15 @@ def build_remote_prefix(bucket_prefix: str, version: str) -> str:
 
 def run_deploy(spec: types.DeploySpec, dry_run: bool = False) -> bool:
     logging.info(f'Deploy spec={spec.to_dict()}')
-    local_files = find_local_files(spec.content.root_dir, spec.content.patterns)
     remote_prefix = build_remote_prefix(spec.storage.prefix, spec.version)
+
+    remote_prefix_exists = s3bucket.directory_exists(spec.storage.name, remote_prefix)
+    # Prevent the deploy if the remote path already exists.
+    if remote_prefix_exists:
+        logging.error(f'The specified version ({spec.version}) already exists in the target storage ({vars(spec.storage)})')
+        return False
+
+    local_files = find_local_files(spec.content.root_dir, spec.content.patterns)
     file_mappings = map_local_to_remote(
         spec.content.root_dir,
         remote_prefix,
@@ -106,6 +113,13 @@ def run_deploy(spec: types.DeploySpec, dry_run: bool = False) -> bool:
 def run_rollback(spec: types.RollbackSpec, dry_run: bool = False) -> bool:
     logging.info(f'Rollback spec={spec.to_dict()}')
     remote_prefix = build_remote_prefix(spec.storage.prefix, spec.version)
+
+    remote_prefix_exists = s3bucket.directory_exists(spec.storage.name, remote_prefix)
+    # Prevent the rollback if the remote path does not exist.
+    if not remote_prefix_exists:
+        logging.error(f'The specified version ({spec.version}) does not exist in the target storage ({vars(spec.storage)})')
+        return False
+
     return cloudfront.update(
         spec.cdn.distribution_id,
         spec.cdn.origin_name,
@@ -159,7 +173,7 @@ def parse_args() -> (str, configuration.ConfigOptions):
     config_adapter = configuration.ConfigOptionsAdapter(config)
     if args.config_file:
         is_config_loaded = True
-        config.load_from_file(args.config_file)
+        config.load_from_io(args.config_file)
 
     subparsers = parser.add_subparsers(dest='subcommand', required=True, help='sub-command')
 

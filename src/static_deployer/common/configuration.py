@@ -3,6 +3,7 @@ from . import log
 import logging
 import toml
 import attr
+from io import IOBase
 
 
 @attr.s(auto_attribs=True, init=False)
@@ -62,6 +63,14 @@ class ConfigOptions(object):
             with open(file, 'r') as f:
                 success = self.load_from_toml(f.read())
                 return success
+        except OSError:
+            logging.error(f'failed to open config file {file}')
+            return None
+
+    def load_from_io(self, file: IOBase) -> bool:
+        try:
+            success = self.load_from_toml(file.read())
+            return success
         except OSError:
             logging.error(f'failed to open config file {file}')
             return None
