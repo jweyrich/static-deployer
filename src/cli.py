@@ -105,7 +105,7 @@ def run_deploy(spec: types.DeploySpec, dry_run: bool = False) -> bool:
     return cloudfront.update(
         spec.cdn.distribution_id,
         spec.cdn.origin_name,
-        spec.storage.prefix,
+        remote_prefix,
         dry_run=dry_run,
     )
 

@@ -87,11 +87,11 @@ def update_distribution(distribution_id: str, origin_name: str, new_origin_path:
     return True
 
 
-def update(distribution_id: str, origin_name: str, bucket_prefix: str, dry_run: bool = False) -> bool:
+def update(distribution_id: str, origin_name: str, new_origin_path: str, dry_run: bool = False) -> bool:
     success = update_distribution(
         distribution_id,
         origin_name,
-        new_origin_path=bucket_prefix,
+        new_origin_path=new_origin_path,
         dry_run=dry_run,
     )
     if not success:
