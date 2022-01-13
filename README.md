@@ -2,7 +2,7 @@
 
 ## How to install?
 
-pip3 install static-deployer
+    pip3 install static-deployer
 
 ## How to deploy a static website?
 
@@ -35,9 +35,7 @@ The rollback does the following:
 1. Changes the CloudFront origin `ORIGIN_NAME` to point to a previously deployed version specified by `VERSION`.
 2. Waits for the distribution changes to complete.
 
-## How to use a config file?
-
-Example of `config.toml`:
+## Example of config file `config.toml`
 
 ```toml
 dry_run = "false"
@@ -55,3 +53,10 @@ distribution_id = "your-cloudfront-distribution-id"
 origin_name = "your-cloudfront-origin-name"
 ```
 
+## How to use the config file?
+
+    static-deployer -c config.toml deploy --version VERSION
+
+Once you have settings in a config file, you can tell static-deployer to use the config file by using the arguments `-c yourfile.toml`.
+By specifying a config file, you eliminate the need of informing all parameters at every invocation. You're then required to inform only the missing parameters.
+The command-line arguments override any settings you have in the config file.
