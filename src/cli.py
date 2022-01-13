@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from stat import *
-from typing import List, Set
+from typing import List, Set, Tuple
 import os
 import sys
 import glob
@@ -159,7 +159,7 @@ def rollback(config: configuration.ConfigOptions) -> bool:
     return run_rollback(spec, dry_run=dry_run)
 
 
-def parse_args() -> (str, configuration.ConfigOptions):
+def parse_args() -> Tuple[str, configuration.ConfigOptions]:
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config',
                         help='load configuration from a specific file',

@@ -5,7 +5,7 @@ import sys
 logger = logging.getLogger(__name__)
 
 
-def _get_debug_record(message):
+def _make_debug_record(message):
     fn, lno, func, sinfo = logger.findCaller()
     record = logger.makeRecord(logger.name, logging.DEBUG, fn, lno, message, None, None,
                                func=func, extra=None, sinfo=sinfo)
@@ -13,5 +13,5 @@ def _get_debug_record(message):
 
 
 def debug(message: str):
-    record = _get_debug_record(message)
+    record = _make_debug_record(message)
     logger.handle(record)
