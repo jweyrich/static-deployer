@@ -1,3 +1,4 @@
+import pathlib
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = 'static-deployer'
@@ -9,15 +10,20 @@ PACKAGE_AUTHOR = 'Jardel Weyrich'
 PACKAGE_AUTHOR_EMAIL = 'jweyrich@gmail.com'
 
 if __name__ == "__main__":
+    # The text of the README file
+    CURRENT_DIR = pathlib.Path(__file__).parent
+    README = (CURRENT_DIR / "README.md").read_text()
     setup(
         name=PACKAGE_NAME,
         version=PACKAGE_VER,
         description=PACKAGE_DESC,
+        long_description=README,
+        long_description_content_type="text/markdown",
         url=PACKAGE_URL,
         author=PACKAGE_AUTHOR,
         author_email=PACKAGE_AUTHOR_EMAIL,
         license=PACKAGE_LICENSE,
-        packages=find_packages(where='src'),
+        packages=find_packages(exclude=("test",), where='src'),
         package_dir={"": "src"},
         py_modules=['cli'],
         entry_points='''
