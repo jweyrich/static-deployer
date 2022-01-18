@@ -5,6 +5,7 @@ from io import IOBase
 import boto3
 import os
 import mimetypes
+import multiprocessing
 import logging
 import hashlib
 # import base64
@@ -79,13 +80,24 @@ def upload_file(file_name: str, bucket_name: str, object_name: str, dry_run: boo
     return True
 
 
+def task_upload_file(root_dir: str, bucket_name: str, file_mapping: types.FileMapping, dry_run: bool = False) -> bool:
+    local_path = os.path.join(root_dir, file_mapping.local_path)
+    return upload_file(local_path, bucket_name, file_mapping.remote_path, dry_run=dry_run)
+
+
 def upload_files(root_dir: str, bucket_name: str, file_mappings: List[types.FileMapping], dry_run: bool = False) -> bool:
-    for mapping in file_mappings:
-        local_path = os.path.join(root_dir, mapping.local_path)
-        success = upload_file(local_path, bucket_name, mapping.remote_path, dry_run=dry_run)
-        if not success:
-            return False
-    return True
+    num_concurrent_tasks = multiprocessing.cpu_count() * 2
+    logging.info(f'Will use {num_concurrent_tasks} concurrent tasks')
+    pool = multiprocessing.Pool(processes=num_concurrent_tasks)
+
+    all_results = [ pool.apply_async(task_upload_file, (root_dir, bucket_name, mapping, dry_run,)) for mapping in file_mappings ]
+    logging.info(f'Waiting for {len(all_results)} tasks to finish')
+    # Wait for all tasks to complete
+    [result.wait() for result in all_results]
+    # Return True if all elements of the iterable are true (or if the iterable is empty).
+    success = all(all_results)
+    logging.info(f'All {len(all_results)} tasks have finished, final result is {"success" if success else "failure"}')
+    return success
 
 
 def file_exists(bucket_name: str, path: str) -> bool:
@@ -100,7 +112,6 @@ def file_exists(bucket_name: str, path: str) -> bool:
     except ClientError as e:
         logging.error(e)
         return False
-    return False
 
 
 def directory_exists(bucket_name: str, path: str) -> bool:

@@ -249,10 +249,6 @@ def parse_args() -> Tuple[str, configuration.ConfigOptions]:
 
 
 def main():
-    log_format = '%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(funcName)s %(message)s'
-    log_level = logging.DEBUG if os.environ.get('DEBUG', '') else logging.INFO
-    logging.basicConfig(format=log_format, level=log_level)
-
     subcommand, config_options = parse_args()
     success = True
 
