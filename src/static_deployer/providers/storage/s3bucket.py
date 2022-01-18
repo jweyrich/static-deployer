@@ -61,8 +61,12 @@ def upload_file(file_name: str, bucket_name: str, object_name: str, dry_run: boo
             extra_opts = {
                 # 'ContentMD5': base64.b64encode(hash_string),
                 'CacheControl': f'public, max-age={cache_seconds}',
-                'ContentType': f'{content_type}{"; {content_encoding}" if content_encoding else ""}',
             }
+            if content_type:
+                extra_opts = {
+                    **extra_opts,
+                    'ContentType': f'{content_type}{"; {content_encoding}" if content_encoding else ""}',
+                }
             log.debug(f'\'{file_name}\' -> \'s3://{bucket_name}/{object_name}\' extra_opts={extra_opts}')
             if not dry_run:
                 response = client.upload_fileobj(fileobj, bucket_name, object_name, ExtraArgs=extra_opts)
