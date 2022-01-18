@@ -2,7 +2,7 @@ import pathlib
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = 'static-deployer'
-PACKAGE_VER = '0.1.0'
+PACKAGE_VER = '0.1.1'
 PACKAGE_DESC = 'Deploy static websites using a single command'
 PACKAGE_URL = 'https://github.com/jweyrich/static-deployer'
 PACKAGE_LICENSE = 'BSD-3-Clause'
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         py_modules=['cli'],
         entry_points='''
             [console_scripts]
-            static_deployer=cli:main
+            static-deployer=cli:main
         ''',
         install_requires=[
             'attrs >=21.2.0,<22.0.0',
