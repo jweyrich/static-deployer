@@ -34,6 +34,7 @@ if __name__ == "__main__":
             'attrs >=21.2.0,<22.0.0',
             'boto3 >=1.18.39,<2.0.0',
             'toml >=0.10.2,<1.0.0',
+            'multiprocessing-logging >=0.3.1,<1.0.0',
         ],
         python_requires='>=3.7, <4.0',
         classifiers=[
