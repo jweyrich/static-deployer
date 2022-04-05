@@ -2,7 +2,7 @@ import pathlib
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = 'static-deployer'
-PACKAGE_VER = '0.1.2'
+PACKAGE_VER = '0.1.3'
 PACKAGE_DESC = 'Deploy static websites using a single command'
 PACKAGE_URL = 'https://github.com/jweyrich/static-deployer'
 PACKAGE_LICENSE = 'BSD-3-Clause'

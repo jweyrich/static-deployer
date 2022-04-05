@@ -5,10 +5,10 @@ import logging
 
 
 def invalidate_paths(distribution_id: str, paths_to_invalidate: List[str], dry_run: bool = False) -> bool:
-    if not dry_run:
-        client = boto3.client('cloudfront')
+    client = boto3.client('cloudfront')
+    timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
 
-        timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    if not dry_run:
         response = client.create_invalidation(
             DistributionId=distribution_id,
             InvalidationBatch={
@@ -45,9 +45,11 @@ def invalidate_paths(distribution_id: str, paths_to_invalidate: List[str], dry_r
 
 
 def update_distribution(distribution_id: str, origin_name: str, new_origin_path: str, dry_run: bool = False) -> bool:
+    client = boto3.client('cloudfront')
     if not dry_run:
-        client = boto3.client('cloudfront')
-
+        # About the `get_distribution` method:
+        # 1. If the distribution was not found, it throws `CloudFront.Client.exceptions.NoSuchDistribution`
+        # 2. If the user has no permission to describe the distribution, it throws `CloudFront.Client.exceptions.AccessDenied`
         response = client.get_distribution(Id=distribution_id)
         distribution_etag = response.get('ETag', '')
         distribution_config = response \
@@ -58,6 +60,7 @@ def update_distribution(distribution_id: str, origin_name: str, new_origin_path:
             .get('Items', [])
         filtered_origins = list(filter(lambda origin: origin.get('Id') == origin_name, all_origins))
         if len(filtered_origins) == 0:
+            logging.error(f'Could not find origin with origin_name={origin_name} in distribution_id={distribution_id}')
             return False
 
         new_origin_path = new_origin_path if new_origin_path.startswith('/') else '/' + new_origin_path
