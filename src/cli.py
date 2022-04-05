@@ -257,6 +257,9 @@ def main():
     elif subcommand == 'rollback':
         success = rollback(config_options)
 
+    if not success:
+        logging.error('Exiting with error exit code due to previous errors')
+
     sys.exit(0 if success else 1)
 
 
