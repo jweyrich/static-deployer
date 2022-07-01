@@ -8,7 +8,7 @@ import glob
 import argparse
 import re
 import logging
-from static_deployer.common import log, types, configuration
+from static_deployer.common import log, types, configuration, utils
 from static_deployer.providers.cdn import cloudfront
 from static_deployer.providers.storage import s3bucket
 
@@ -81,8 +81,8 @@ def build_remote_prefix(bucket_prefix: str, version: str) -> str:
         return version
 
 
-def run_deploy(spec: types.DeploySpec, dry_run: bool = False) -> bool:
-    logging.info(f'Deploy spec={spec.to_dict()}')
+def run_deploy(spec: types.DeploySpec, options: types.UploadOptions, dry_run: bool = False) -> bool:
+    logging.info(f'Deploy spec={spec.to_dict()}, options={options.to_dict()}')
     remote_prefix = build_remote_prefix(spec.storage.prefix, spec.version)
 
     remote_prefix_exists = s3bucket.directory_exists(spec.storage.name, remote_prefix)
@@ -98,7 +98,7 @@ def run_deploy(spec: types.DeploySpec, dry_run: bool = False) -> bool:
         local_files,
     )
 
-    success = s3bucket.upload_files(spec.content.root_dir, spec.storage.name, file_mappings, dry_run=dry_run)
+    success = s3bucket.upload_files(spec.content.root_dir, spec.storage.name, file_mappings, options, dry_run=dry_run)
     if not success:
         return False
 
@@ -142,7 +142,10 @@ def deploy(config: configuration.ConfigOptions) -> bool:
     bucket = types.StorageDetails(name=bucket_name, prefix=bucket_prefix)
     cloudfront_dist = types.CdnDetails(distribution_id=distribution_id, origin_name=origin_name)
     spec = types.DeploySpec(content=content, storage=bucket, cdn=cloudfront_dist, version=version)
-    return run_deploy(spec, dry_run=dry_run)
+    options = types.UploadOptions()
+    if config.storage.cache_maxage is not None:
+        options.cache_maxage = utils.interval_string_to_seconds(config.storage.cache_maxage)
+    return run_deploy(spec, options, dry_run=dry_run)
 
 
 def rollback(config: configuration.ConfigOptions) -> bool:
@@ -200,6 +203,10 @@ def parse_args() -> Tuple[str, configuration.ConfigOptions]:
     cmd_deploy.add_argument('--origin-name',
                             help='the cloudfront origin name',
                             required=True)
+    cmd_deploy.add_argument('--cache-maxage',
+                            help='cache the stored object for a specific amount of time (examples: 1y 2w 3d 4h 5m 30s)',
+                            required=False,
+                            default='')
     cmd_deploy.add_argument('--version',
                             help='version to be deployed',
                             required=True)

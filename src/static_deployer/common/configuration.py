@@ -17,6 +17,7 @@ class ConfigOptions(object):
     class StorageConfig:
         name: str
         prefix: str
+        cache_maxage: str
 
     @attr.s(auto_attribs=True)
     class CdnConfig:
@@ -40,6 +41,7 @@ class ConfigOptions(object):
         self.storage = ConfigOptions.StorageConfig(
             name=data["storage"].get("name"),
             prefix=data["storage"].get("prefix"),
+            cache_maxage=data["storage"].get("cache_maxage"),
         ) if data.get("storage") else None
         self.cdn = ConfigOptions.CdnConfig(
             distribution_id=data["cdn"].get("distribution_id"),
@@ -86,6 +88,7 @@ class ConfigOptionsAdapter(object):
             'patterns': self.config.content.patterns,
             'bucket_name': self.config.storage.name,
             'bucket_prefix': self.config.storage.prefix,
+            'cache_maxage': self.config.storage.cache_maxage,
             'distribution_id': self.config.cdn.distribution_id,
             'origin_name': self.config.cdn.origin_name,
             'version': self.config.version,
@@ -105,6 +108,9 @@ class ConfigOptionsAdapter(object):
         value = data.get('bucket_prefix')
         if value:
             self.config.storage.prefix = value
+        value = data.get('cache_maxage')
+        if value:
+            self.config.storage.cache_maxage = value
         value = data.get('distribution_id')
         if value:
             self.config.cdn.distribution_id = value

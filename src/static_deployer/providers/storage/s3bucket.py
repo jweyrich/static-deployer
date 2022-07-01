@@ -12,10 +12,6 @@ import hashlib
 from ...common import log, types
 
 
-TTL_1YEAR = 31556926
-# TTL_1MINUTE = 60
-
-
 # Original source: https://stackoverflow.com/a/3431838/298054
 def hash_file(file: IOBase) -> str:
     hash_impl = hashlib.md5()
@@ -25,7 +21,7 @@ def hash_file(file: IOBase) -> str:
     return hash_impl.hexdigest()
 
 
-def upload_file(file_name: str, bucket_name: str, object_name: str, dry_run: bool = False) -> bool:
+def upload_file(file_name: str, bucket_name: str, object_name: str, options: types.UploadOptions, dry_run: bool = False) -> bool:
     """Upload a file to an S3 bucket.
 
     This will use a managed transfer which will perform a multipart upload
@@ -57,12 +53,15 @@ def upload_file(file_name: str, bucket_name: str, object_name: str, dry_run: boo
         with open(file_name, "rb") as fileobj:
             # hash_string = hash_file(fileobj)
             # See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/customizations/s3.html#boto3.s3.transfer.S3Transfer.ALLOWED_UPLOAD_ARGS
-            cache_seconds = TTL_1YEAR
             content_type, content_encoding = mimetypes.guess_type(file_name)
             extra_opts = {
                 # 'ContentMD5': base64.b64encode(hash_string),
-                'CacheControl': f'public, max-age={cache_seconds}',
             }
+            if options and options.cache_maxage is not None:
+                extra_opts = {
+                    **extra_opts,
+                    'CacheControl': f'public, max-age={options.cache_maxage}',
+                }
             if content_type:
                 extra_opts = {
                     **extra_opts,
@@ -80,17 +79,17 @@ def upload_file(file_name: str, bucket_name: str, object_name: str, dry_run: boo
     return True
 
 
-def task_upload_file(root_dir: str, bucket_name: str, file_mapping: types.FileMapping, dry_run: bool = False) -> bool:
+def task_upload_file(root_dir: str, bucket_name: str, file_mapping: types.FileMapping, options: types.UploadOptions, dry_run: bool = False) -> bool:
     local_path = os.path.join(root_dir, file_mapping.local_path)
-    return upload_file(local_path, bucket_name, file_mapping.remote_path, dry_run=dry_run)
+    return upload_file(local_path, bucket_name, file_mapping.remote_path, options, dry_run=dry_run)
 
 
-def upload_files(root_dir: str, bucket_name: str, file_mappings: List[types.FileMapping], dry_run: bool = False) -> bool:
+def upload_files(root_dir: str, bucket_name: str, file_mappings: List[types.FileMapping], options: types.UploadOptions, dry_run: bool = False) -> bool:
     num_concurrent_tasks = multiprocessing.cpu_count() * 2
     logging.info(f'Will use {num_concurrent_tasks} concurrent tasks')
     pool = multiprocessing.Pool(processes=num_concurrent_tasks)
 
-    all_results = [ pool.apply_async(task_upload_file, (root_dir, bucket_name, mapping, dry_run,)) for mapping in file_mappings ]
+    all_results = [ pool.apply_async(task_upload_file, (root_dir, bucket_name, mapping, options, dry_run,)) for mapping in file_mappings ]
     logging.info(f'Waiting for {len(all_results)} tasks to finish')
     # Wait for all tasks to complete
     [result.wait() for result in all_results]

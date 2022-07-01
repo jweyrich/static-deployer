@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 import attr
 import logging
 
@@ -50,6 +50,14 @@ class RollbackSpec(object):
     storage: StorageDetails
     cdn: CdnDetails
     version: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return attr.asdict(self)
+
+
+@attr.s(auto_attribs=True)
+class UploadOptions:
+    cache_maxage: Optional[int] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return attr.asdict(self)
