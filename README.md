@@ -29,6 +29,7 @@ aws-vault add mysite
         --distribution-id DISTRIBUTION_ID \
         --origin-name ORIGIN_NAME \
         --version VERSION
+        --cache-maxage "1 hour"
 
 The deploy does the following:
 
@@ -63,6 +64,7 @@ patterns = "**"
 [storage]
 name = "your-website-domain.com"
 prefix = "{{version}}"
+cache_maxage = "1 hour"
 
 [cdn]
 distribution_id = "your-cloudfront-distribution-id"
