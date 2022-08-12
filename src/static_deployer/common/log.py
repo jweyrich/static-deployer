@@ -17,7 +17,7 @@ mp_logger = multiprocessing.get_logger()
 # mp_logger.addHandler(mp_handler)
 
 # Handle records from parallel processes to the main process so that they are handled correctly.
-multiprocessing_logging.install_mp_handler()
+# multiprocessing_logging.install_mp_handler()
 
 def _make_debug_record(message):
     fn, lno, func, sinfo = logger.findCaller()
