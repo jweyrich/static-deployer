@@ -3,8 +3,8 @@
 ## What is static-deployer?
 
 static-deployer aims to simplify the deploy and rollback of your static website (frontend) to AWS using a single command.
-It _still_ does not create the AWS resources for you, so you need to have a previously configured S3 bucket and a CloudFront distribution configured with an origin to your S3 bucket.
-The credentials you will use to run the static-deployer need to have permission List+Read+Write permissions to the specified bucket and cloudfront distribution.
+It _still_ does not create the AWS resources for you, so you need to have a previously existing S3 bucket and a CloudFront distribution configured with an origin pointing to your S3 bucket.
+The credentials you will use to run the static-deployer need to have List+Read+Write permissions to the specified bucket and cloudfront distribution.
 
 ## How to install?
 
@@ -31,10 +31,10 @@ aws-vault add mysite
         --version VERSION
         --cache-maxage "1 hour"
 
-The deploy does the following:
+The deploy command does the following:
 
 1. Finds all files from `ROOT_DIR`, including only those that match the patterns specified in `PATTERNS` (comma separated);
-2. Unside the bucket specified by `BUCKET_NAME`, creates a new folder/directory with the name specified in `VERSION`;
+2. Inside the bucket specified by `BUCKET_NAME`, creates a new folder/directory with the name specified in `VERSION`;
 3. Uploads all files to the folder/directory created in step 2;
 4. Changes the CloudFront distribution `DISTRIBUTION_ID` origin named `ORIGIN_NAME` to point the folder/directory created in step 2;
 4. Invalidates the CloudFront distribution `DISTRIBUTION_ID` cache using the pattern `/*`;
@@ -48,7 +48,7 @@ The deploy does the following:
         --origin-name ORIGIN_NAME \
         --version VERSION
 
-The rollback does the following:
+The rollback command does the following:
 1. Changes the CloudFront origin `ORIGIN_NAME` to point to a previously deployed version specified by `VERSION`.
 2. Waits for the distribution changes to complete.
 
